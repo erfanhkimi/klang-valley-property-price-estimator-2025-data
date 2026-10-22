@@ -6,60 +6,76 @@
 <title>Malaysia Property Price Estimator</title>
 <style>
   :root {
-    --bg: #f3f6f4; --surface: #ffffff; --ink: #14231d; --muted: #5a6b63;
-    --line: #cfdad4; --accent: #0f6b4f; --accent-ink: #ffffff; --result: #e4f1ea;
+    --bg: #fafaf8; --ink: #111111; --muted: #77776f; --line: #deded8;
+    --btn: #111111; --btn-ink: #fafaf8; --error: #b3261e;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0f1a15; --surface: #16251e; --ink: #e6f0ea; --muted: #93a79c;
-      --line: #2b4036; --accent: #4fc79b; --accent-ink: #0a1712; --result: #1c3328;
+      --bg: #111111; --ink: #ececE6; --muted: #8c8c84; --line: #2e2e2a;
+      --btn: #ececE6; --btn-ink: #111111; --error: #f2877f;
     }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
-    display: grid; place-items: start center; min-height: 100vh; padding: 2rem 1rem;
+    font: 16px/1.55 "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    min-height: 100vh; display: flex; justify-content: center; padding: 4rem 1.5rem;
   }
-  main { width: 100%; max-width: 30rem; }
-  h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 .4rem; }
-  p.lead { margin: 0 0 1.5rem; color: var(--muted); }
-  form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; display: grid; gap: 1rem; }
-  label { display: grid; gap: .3rem; font-weight: 600; font-size: .92rem; }
-  input, select {
-    font: inherit; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 6px;
-    background: var(--bg); color: var(--ink); width: 100%;
+  main { width: 100%; max-width: 24rem; }
+  .eyebrow { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 .75rem; }
+  h1 { font-size: 1.9rem; font-weight: 600; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .6rem; }
+  .lead { margin: 0 0 2.5rem; color: var(--muted); }
+
+  #wake { display: none; margin: 0 0 1.5rem; padding-left: .8rem; border-left: 2px solid var(--ink); font-size: .9rem; color: var(--muted); }
+  #wake.show { display: block; }
+
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 1.5rem; }
+  fieldset:disabled { opacity: .45; }
+  label { display: grid; gap: .25rem; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  select, input {
+    font: inherit; font-size: 1.05rem; letter-spacing: 0; text-transform: none; color: var(--ink);
+    background: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+    padding: .45rem 0; width: 100%;
   }
-  input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
-  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+  select option { color: #111; }
+  select:focus-visible, input:focus-visible { outline: none; border-bottom-color: var(--ink); }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
   button {
-    font: inherit; font-weight: 700; padding: .75rem; border: 0; border-radius: 6px;
-    background: var(--accent); color: var(--accent-ink); cursor: pointer;
+    font: inherit; font-weight: 600; width: 100%; padding: .85rem; margin-top: .5rem;
+    background: var(--btn); color: var(--btn-ink); border: 0; border-radius: 4px; cursor: pointer;
   }
-  button:disabled { opacity: .6; cursor: wait; }
-  #result { margin-top: 1.25rem; padding: 1.1rem; border-radius: 10px; background: var(--result); display: none; }
+  button:disabled { opacity: .5; cursor: wait; }
+
+  #result { display: none; margin-top: 2.5rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
   #result.show { display: block; }
-  #price { font-size: 2rem; font-weight: 700; margin: 0; }
-  #note, #error { margin: .3rem 0 0; color: var(--muted); font-size: .9rem; }
-  #error { color: #b3261e; }
-  footer { margin-top: 1.5rem; font-size: .82rem; color: var(--muted); }
-  a { color: var(--accent); }
+  #price { font-size: 2.6rem; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; margin: 0 0 .5rem; }
+  #note { margin: 0; color: var(--muted); font-size: .92rem; }
+  #error { margin: 1rem 0 0; color: var(--error); font-size: .92rem; }
+
+  footer { margin-top: 3rem; font-size: .78rem; color: var(--muted); }
+  footer a { color: inherit; }
 </style>
 </head>
 <body>
 <main>
-  <h1>What is this property worth?</h1>
-  <p class="lead">Pick an area and enter the size to get a price estimate.</p>
+  <p class="eyebrow">Malaysia · Property</p>
+  <h1>Estimate a property’s price</h1>
+  <p class="lead">Choose an area, then enter the size.</p>
+
+  <p id="wake" role="status">Waking up the server. This can take up to a minute on free hosting.</p>
 
   <form id="form">
-    <label>State <select id="state" required></select></label>
-    <label>Township <select id="township" required></select></label>
-    <label>Property type <select id="property_type" required></select></label>
-    <label>Tenure <select id="tenure" required></select></label>
-    <label>Built-up size (sq ft)
-      <input id="size" type="number" min="100" step="1" value="1000" required>
-    </label>
-    <button id="submit" type="submit">Estimate price</button>
+    <fieldset id="fields" disabled>
+      <label>State <select id="state" required></select></label>
+      <label>Township <select id="township" required></select></label>
+      <label>Property type <select id="property_type" required></select></label>
+      <label>Tenure <select id="tenure" required></select></label>
+      <label>Built-up size (sq ft)
+        <input id="size" type="number" min="100" step="1" value="1000" required>
+      </label>
+      <button id="submit" type="submit">Estimate</button>
+    </fieldset>
   </form>
 
   <section id="result" aria-live="polite">
@@ -69,7 +85,7 @@
   <p id="error" role="alert"></p>
 
   <footer>
-    An estimate from a machine-learning model trained on public listing data. It is not a valuation.
+    Estimate from a machine-learning model trained on 2025 public transaction data. Not a valuation.
     <a href="/docs">API docs</a>
   </footer>
 </main>
@@ -77,24 +93,41 @@
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => "RM " + Math.round(n).toLocaleString("en-MY");
+let META = null;
 
 function fill(select, items) {
   select.innerHTML = items.map(v => `<option>${v}</option>`).join("");
 }
 
-let META = null;
-
 function loadTownships() {
   fill($("township"), META.townships_by_state[$("state").value] || []);
 }
 
-fetch("/meta").then(r => r.json()).then(m => {
-  META = m;
-  fill($("state"), m.states);
-  fill($("property_type"), m.property_types);
-  fill($("tenure"), m.tenures);
-  loadTownships();
-}).catch(() => { $("error").textContent = "Could not load the form options. Refresh the page to try again."; });
+// Load dropdown options. Free hosting may be asleep, so retry and explain the wait.
+async function loadMeta(attempt = 0) {
+  const wakeTimer = setTimeout(() => $("wake").classList.add("show"), 3000);
+  try {
+    const res = await fetch("/meta");
+    if (!res.ok) throw new Error();
+    META = await res.json();
+    fill($("state"), META.states);
+    fill($("property_type"), META.property_types);
+    fill($("tenure"), META.tenures);
+    loadTownships();
+    $("fields").disabled = false;
+    $("wake").classList.remove("show");
+  } catch {
+    if (attempt < 20) {
+      setTimeout(() => loadMeta(attempt + 1), 3000);
+    } else {
+      $("wake").classList.remove("show");
+      $("error").textContent = "Could not load the form options. Refresh the page to try again.";
+    }
+  } finally {
+    clearTimeout(wakeTimer);
+  }
+}
+loadMeta();
 
 $("state").addEventListener("change", loadTownships);
 
@@ -112,7 +145,7 @@ $("form").addEventListener("submit", async e => {
     if (!res.ok) throw new Error();
     const d = await res.json();
     $("price").textContent = fmt(d.estimated_price);
-    $("note").textContent = "About " + fmt(d.psf) + " per sq ft. Likely range: " + fmt(d.low) + " to " + fmt(d.high) + ".";
+    $("note").textContent = fmt(d.psf) + " per sq ft · likely range " + fmt(d.low) + " to " + fmt(d.high);
     $("result").classList.add("show");
   } catch {
     $("result").classList.remove("show");

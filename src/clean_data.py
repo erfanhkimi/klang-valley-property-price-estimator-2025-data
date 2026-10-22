@@ -14,8 +14,8 @@ import pandas as pd
 
 # our name -> possible raw names (lowercase, spaces as underscores)
 COLUMN_MAP = {
-    "township": ["township", "neighbourhood", "area"],
-    "location": ["location", "district"],
+    "township": ["township", "neighbourhood"],
+    "location": ["location", "district", "area"],
     "state": ["state", "region"],
     "tenure": ["tenure"],
     "property_type": ["property_type", "type"],
