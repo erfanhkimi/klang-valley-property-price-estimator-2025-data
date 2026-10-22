@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Malaysia Property Price Estimator</title>
+<style>
+  :root {
+    --bg: #f3f6f4; --surface: #ffffff; --ink: #14231d; --muted: #5a6b63;
+    --line: #cfdad4; --accent: #0f6b4f; --accent-ink: #ffffff; --result: #e4f1ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1a15; --surface: #16251e; --ink: #e6f0ea; --muted: #93a79c;
+      --line: #2b4036; --accent: #4fc79b; --accent-ink: #0a1712; --result: #1c3328;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+    display: grid; place-items: start center; min-height: 100vh; padding: 2rem 1rem;
+  }
+  main { width: 100%; max-width: 30rem; }
+  h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 .4rem; }
+  p.lead { margin: 0 0 1.5rem; color: var(--muted); }
+  form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; display: grid; gap: 1rem; }
+  label { display: grid; gap: .3rem; font-weight: 600; font-size: .92rem; }
+  input, select {
+    font: inherit; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--ink); width: 100%;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; }
+  button {
+    font: inherit; font-weight: 700; padding: .75rem; border: 0; border-radius: 6px;
+    background: var(--accent); color: var(--accent-ink); cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: wait; }
+  #result { margin-top: 1.25rem; padding: 1.1rem; border-radius: 10px; background: var(--result); display: none; }
+  #result.show { display: block; }
+  #price { font-size: 2rem; font-weight: 700; margin: 0; }
+  #note, #error { margin: .3rem 0 0; color: var(--muted); font-size: .9rem; }
+  #error { color: #b3261e; }
+  footer { margin-top: 1.5rem; font-size: .82rem; color: var(--muted); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>What is this property worth?</h1>
+  <p class="lead">Pick an area and enter the size to get a price estimate.</p>
+
+  <form id="form">
+    <label>State <select id="state" required></select></label>
+    <label>Township <select id="township" required></select></label>
+    <label>Property type <select id="property_type" required></select></label>
+    <label>Tenure <select id="tenure" required></select></label>
+    <label>Built-up size (sq ft)
+      <input id="size" type="number" min="100" step="1" value="1000" required>
+    </label>
+    <button id="submit" type="submit">Estimate price</button>
+  </form>
+
+  <section id="result" aria-live="polite">
+    <p id="price"></p>
+    <p id="note"></p>
+  </section>
+  <p id="error" role="alert"></p>
+
+  <footer>
+    An estimate from a machine-learning model trained on public listing data. It is not a valuation.
+    <a href="/docs">API docs</a>
+  </footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => "RM " + Math.round(n).toLocaleString("en-MY");
+
+function fill(select, items) {
+  select.innerHTML = items.map(v => `<option>${v}</option>`).join("");
+}
+
+let META = null;
+
+function loadTownships() {
+  fill($("township"), META.townships_by_state[$("state").value] || []);
+}
+
+fetch("/meta").then(r => r.json()).then(m => {
+  META = m;
+  fill($("state"), m.states);
+  fill($("property_type"), m.property_types);
+  fill($("tenure"), m.tenures);
+  loadTownships();
+}).catch(() => { $("error").textContent = "Could not load the form options. Refresh the page to try again."; });
+
+$("state").addEventListener("change", loadTownships);
+
+$("form").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("error").textContent = "";
+  $("submit").disabled = true;
+  const body = {
+    state: $("state").value, township: $("township").value,
+    property_type: $("property_type").value, tenure: $("tenure").value,
+    size: Number($("size").value),
+  };
+  try {
+    const res = await fetch("/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    $("price").textContent = fmt(d.estimated_price);
+    $("note").textContent = "About " + fmt(d.psf) + " per sq ft. Likely range: " + fmt(d.low) + " to " + fmt(d.high) + ".";
+    $("result").classList.add("show");
+  } catch {
+    $("result").classList.remove("show");
+    $("error").textContent = "The estimate failed. Check your inputs and try again.";
+  } finally {
+    $("submit").disabled = false;
+  }
+});
+</script>
+</body>
+</html>

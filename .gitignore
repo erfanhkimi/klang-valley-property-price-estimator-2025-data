@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
+# Raw Kaggle data is not committed (check the dataset licence).
+# The trained model IS committed so Render can serve it.
+data/raw/*
+!data/raw/.gitkeep
+data/clean.csv
