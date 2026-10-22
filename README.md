@@ -1,4 +1,4 @@
-# Malaysia Property Price Estimator
+# Klang Valley Property Price Estimator
 
 A small machine-learning (supervised learning) web app that estimates a property's price per sq ft from its township, tenure and property type, then multiplies by the size you enter.
 
