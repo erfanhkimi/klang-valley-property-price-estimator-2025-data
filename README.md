@@ -2,9 +2,7 @@
 
 A small machine-learning (supervised learning) web app that estimates a property's price per sq ft from its township, tenure and property type, then multiplies by the size you enter.
 
-**Live demo:** _add your Render link here_
-
-![screenshot](docs/screenshot.png)
+**Live demo:** https://klang-valley-property-price-estimator.onrender.com/
 
 ## How it works
 
@@ -34,7 +32,7 @@ python src/train.py
 uvicorn app.main:app --reload
 ```
 
-Open https://klang-valley-property-price-estimator.onrender.com/
+Open: (http://127.0.0.1:8000/)
 
 ## Deploy on Render
 
