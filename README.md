@@ -1,6 +1,6 @@
 # Malaysia Property Price Estimator
 
-A small machine-learning web app that estimates a property's price per sq ft from its township, tenure and property type, then multiplies by the size you enter.
+A small machine-learning (supervised learning) web app that estimates a property's price per sq ft from its township, tenure and property type, then multiplies by the size you enter.
 
 **Live demo:** _add your Render link here_
 
