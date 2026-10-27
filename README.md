@@ -15,10 +15,9 @@ A small machine-learning (supervised learning) web app that estimates a property
 
 | Model | MAE (RM per sq ft) | R² |
 |---|---|---|
-| Linear regression (baseline) | _fill in_ | _fill in_ |
-| Random forest | _fill in_ | _fill in_ |
+| Linear regression (baseline) | 104.9 | 0.314 |
+| Random forest | 103.0 | 0.321 |
 
-Top features: _fill in from the training output_.
 
 ## Run locally
 
